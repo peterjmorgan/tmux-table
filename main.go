@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/araddon/dateparse"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func checkCommandExists(cmd string) (result bool) {
@@ -22,7 +24,7 @@ func checkCommandExists(cmd string) (result bool) {
 type tmuxWin struct {
 	Name string
 	Count int
-	Datetime string
+	Datetime time.Time
 }
 
 func main() {
@@ -37,14 +39,24 @@ func main() {
 	}
 	linePat := regexp.MustCompile(`(.*?): (\d+) windows \(created (.*?)\)`)
 	windows := []tmuxWin{}
+	tz,err := time.LoadLocation("America/Phoenix")
+	if err != nil {
+		panic(err.Error())
+	}
+	time.Local = tz
+
 	for _, line := range (strings.Split(string(tmuxLsOut), "\n")) {
 		if linePat.MatchString(line) {
 			lineMatch := linePat.FindAllStringSubmatch(line, -1)
 			count, _ := strconv.Atoi(lineMatch[0][2])
+			datetime,err := dateparse.ParseLocal(lineMatch[0][3])
+			if err != nil {
+				panic(err.Error())
+			}
 			windows = append(windows, tmuxWin{
 				lineMatch[0][1],
 				count,
-				lineMatch[0][3],
+				datetime,
 			})
 		}
 	}
