@@ -1,4 +1,4 @@
-module tmux-table
+module github.com/peterjmorgan/tmux-table
 
 go 1.17
 
