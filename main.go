@@ -12,26 +12,27 @@ import (
 	"time"
 )
 
-func checkCommandExists(cmd string) (result bool) {
-	checkCmd := exec.Command("command", "-v", cmd)
-	output, _ := checkCmd.Output()
-	if len(output) == 0 {
-		return false // fail
-	}
-	return true // success
-}
+// Broken
+// func checkCommandExists(cmd string) (result bool) {
+// 	checkCmd := exec.Command("command", "-v", cmd)
+// 	output, _ := checkCmd.Output()
+// 	if len(output) == 0 {
+// 		return false // fail
+// 	}
+// 	return true // success
+// }
 
 type tmuxWin struct {
-	Name string
-	Count int
+	Name     string
+	Count    int
 	Datetime time.Time
 }
 
 func main() {
-	cmd := "tmux"
-	if !checkCommandExists(cmd) {
-		fmt.Print("tmux command doesn't exist")
-	}
+	// cmd := "tmux"
+	// if !checkCommandExists(cmd) {
+	// 	fmt.Print("tmux command doesn't exist")
+	// }
 	tmuxLsCmd := exec.Command("tmux", "ls")
 	tmuxLsOut, err := tmuxLsCmd.Output()
 	if err != nil {
@@ -39,17 +40,17 @@ func main() {
 	}
 	linePat := regexp.MustCompile(`(.*?): (\d+) windows \(created (.*?)\)`)
 	windows := []tmuxWin{}
-	tz,err := time.LoadLocation("America/Phoenix")
+	tz, err := time.LoadLocation("America/Phoenix")
 	if err != nil {
 		panic(err.Error())
 	}
 	time.Local = tz
 
-	for _, line := range (strings.Split(string(tmuxLsOut), "\n")) {
+	for _, line := range strings.Split(string(tmuxLsOut), "\n") {
 		if linePat.MatchString(line) {
 			lineMatch := linePat.FindAllStringSubmatch(line, -1)
 			count, _ := strconv.Atoi(lineMatch[0][2])
-			datetime,err := dateparse.ParseLocal(lineMatch[0][3])
+			datetime, err := dateparse.ParseLocal(lineMatch[0][3])
 			if err != nil {
 				panic(err.Error())
 			}
